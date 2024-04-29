@@ -1,0 +1,7 @@
+﻿ID,NAME,PREREQS,COST,OPTION_TYPE,EFFECT_TYPE,EFFECT_SIZE,HOVER_TEXT
+HIST1,War,0,15000,WAR,BONUS,12500,"War is a common event that disinformation campaigns take advantage of to spread their own narratives. With This upgrade, take advantage of common narratives surrounding war time panic that will boost your campaign."
+HIST2,Plauge,0,15000,PANDEMIC,BONUS,12500,The spread of disease can be quite scary. Operatives have used this fear to spread disinformation as early as the Black Plague and continue to use this fear today. Take advantage of common narratives surrounding pandemic panic to boost your campaign.
+HIST3,Disaster,0,15000,DISASTER,BONUS,12500,Natural Disasters occur throughout the world. Floods are on the rise and earthquakes are hitting New York. Uncontrollable events like natural disasters set people at unease. Take advantage of this discomfort and the unpredictability of these events to boost your campaign.
+HIST4,Refugee Crisis,0,15000,REFUGEE,BONUS,12500,"The influx of people into any space can cause stress for those already there. Fears surrounding housing, job, and food scarcity amplify tensions between groups. Use this tension to your advantage by exploiting common narratives spread when refugees arrive."
+HIST5,Gay Penguins,0,15000,GP,BONUS,150000,Gay Penguins can be quite alarming to some folk. Misinformation about the queer community spreads when news catches of these animals. Take advantage of the media attention to boost your own campaign.
+END,,,,,,,
