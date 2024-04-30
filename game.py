@@ -6,6 +6,7 @@ from tree import Tree
 import csvReader as csv
 import graphics.graphicsloop as graphics
 import math
+import random
 
 EVENT_PROB = 0.1
 BELIEVER_PERCENT = 0.05
@@ -14,44 +15,8 @@ POP = 300000
 DEFAULT = 0
 EVENT = 5
 
-WIN = -1
-
-# class Believers:
-#     def __init__(self):
-#         self.true_believers = 1
-#         self.on_the_edge = 0
-#     def total(self):
-#         return self.true_believers + self.on_the_edge
-
-# class Map:
-
-#     def __init__(self):
-#         self.population = POP 
-#         self.believers = believers()
-
-#         #set up states and whatnot
-#             #maybe just make a general election, though
-#             #or make it when a district, then you have to win the country
-#                 #this emphasizes how bigger influence operations use a variety of different tactics
-#     def update(self, tree, stage):
-#         if stage == 0:
-#             #TODO finish regular default updates to believers
-#             #MATH not sure if I like this
-#             self.believers.true_believers += self.believers.on_the_edge * BELIEVER_PERCENT
-#             self.believers.on_the_edge -= self.believers.on_the_edge * BELIEVER_PERCENT
-#             self.believers.on_the_edge += self.believers.total() * ((tree.word_of_mouth + 1) * BELIEVER_PERCENT)
-#         elif stage == 1:
-#             #TODO Midgame setup
-#             j = 0
-#         elif stage == 2:
-#             i = 1
-#             #TODO Endgame setup
-
-
-#         if random.rand() < EVENT_PROB:
-#             i = 2
-            
-
+WIN = -2
+END = -1            
 
 #Start with creating a system
 class Game:
@@ -61,7 +26,7 @@ class Game:
         self.population = POP
         self.tree = Tree()
 
-        self.end_time = 3600 * 3
+        self.end_time = 30 * 150
 
         self.counter = 0
 
@@ -78,6 +43,9 @@ class Game:
 
         self.curr_screen = world.update_screen(self.curr_screen, self.believers, self.population, game=self)
         
+        if self.curr_screen == END:
+            self.end = True
+
         #create a function to increase believers
         if self.curr_screen != EVENT:
             self.counter += 1
@@ -87,13 +55,11 @@ class Game:
             #6 counter = 1 second. TIME OF GAME SHOULD BE 
             #print(self.believers)
 
-
-
-        if round((self.end_time - self.counter) / 60) % 25 == 0:
+        if round((self.end_time - self.counter) / 30) % 30 == 0 and self.counter > 30:
             self.curr_screen = EVENT
-            self.counter += 3
+            self.counter += 1
 
-        if round((self.end_time - self.counter) / 60) <= 0:
+        if round((self.end_time - self.counter) / 30) <= 0:
             #lose condition
             self.win = False
             self.curr_screen = WIN
@@ -127,13 +93,146 @@ class Game:
             
         world.quit()
 
+    #This function is used for automatic game testing.
+    def set_events(self, events):
+        self.events = []
+        for event in events:
+            new_button = button.Button(event.x, event.y, None, 1, event=event, type=1, color=(0,0,0))
+            self.events.append(new_button)
+
+    def bot_update_believers(self):
+        #the screen updates the believers by the rate determined by tree every 1/6 of a second
+        #by that logic, I need to update the screen every 6 times a second. an event happens every 30 seconds
+        #there are 10 events
+        #update the screen 6 * 30 times before switching to an event. At the end, 
+        for i in range(6 * 30):
+            self.tree.update_believers(self)
+        self.counter += 30 * 30
+
+    #Get options returns the list of upgrades available with the current number of believers
+    def get_options(self):
+        option_list = []
+        for key in self.tree.skills:
+            if not self.tree.skills[key].present and self.tree.is_legal(key, self):
+                #print(self.tree.skills[key].present, self.tree.skills[key].cost, self.believers)
+                option_list.append(key)
+        if self.tree.is_legal("WOM", self):
+            option_list.append("WOM")
+
+        return option_list
+
+    def get_event(self):
+        return random.choice(self.events)
+
+    def get_event_options(self, event):
+        options = []
+        for option in event.options:
+            legal = True
+            for req in option.requirements:
+                if req != "0" and req not in self.tree.skills:
+                    legal = False
+                    break
+            if legal:
+                options.append(option)
+        return options
+
+    def simulate(self, upgrade_algo, event_algo):
+        num_reps = 0
+        self.reset_game()
+        while not self.end:
+            num_reps += 1
+            self.bot_update_believers()
+            upgrade_algo(self)
+            event = self.get_event()
+            event_algo(self, event).change(self)
+
+            if self.counter >= self.end_time:
+                self.end = True
+            if self.believers >= (self.population / 2):
+                self.end = True
+                self.win = True
+        #print(self.believers)
+        #print("num reps = " + str(num_reps))
+        return self.win
+
+    def reset_game(self):
+        self.win = False
+        self.end = False
+        self.believers = 1
+        self.counter = 0
+        for skill in self.tree.skills:
+            self.tree.skills[skill].present = False
+
+        self.tree.wom_cost = 10
+        self.tree.word_of_mouth = 1
+        self.curr_screen = DEFAULT
+        
+
+    def test_algorithm(self, reps, upgrade_algo, event_algo):
+        total_wins = 0
+        for i in range(reps):
+            self.reset_game()
+            if self.simulate(upgrade_algo, event_algo):
+                total_wins += 1
+        return total_wins / reps
+            
+
+def random_upgrades(game):
+    upgrade = None
+    options = game.get_options()
+    options.append(None)
+    upgrade = random.choice(options)
+    if upgrade == None:
+        return
+    else:
+        game.tree.upgrade(upgrade, game)
+        random_upgrades(game)
+
+def greedy_upgrades(game):
+    #TODO Make an agent that upgrades as long as it has believers left
+    options = game.get_options()
+    while options != []:
+        upgrade = random.choice(options)
+        game.tree.upgrade(upgrade, game)
+        options = game.get_options()
+        
+
+def random_events(game, event):
+    return random.choice(game.get_event_options(event))
+
+def greedy_events(game, event):
+    #TODO write an agent that uses the best event option
+    best = None
+    options = game.get_event_options(event)
+    for option in options:
+        if best == None:
+            best = option
+        if best.effect < option.effect:
+            best = option
+    return best
+
+
+def print_stats(game, tests):
+    print("Stats: ")
+    print("end_time = " + str(game.end_time / 30))
+    print("num_tests = " + str(tests))
 
 def main():
     database = "database/events.csv"
 
     #print("it gets past database")
+    tests = 1000
 
     new_game = Game(database)
+
+    print_stats(new_game, tests)
+
+    #print(new_game.simulate(random_upgrades, random_events))
+    # print("Random upgrades, random events: win percentage == " + str(new_game.test_algorithm(tests, random_upgrades, random_events)))
+    # print("Greedy upgrades, greedy events: win percentage == " + str(new_game.test_algorithm(tests, greedy_upgrades, greedy_events)))
+    # print("Random upgrades, greedy events: win percentage == " + str(new_game.test_algorithm(tests, random_upgrades, greedy_events)))
+    # print("Greedy upgrades, random events: win percentage == " + str(new_game.test_algorithm(tests, greedy_upgrades, random_events)))
+    new_game.run()
 
     new_game.run()
 
