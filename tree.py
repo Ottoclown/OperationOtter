@@ -69,69 +69,67 @@ class Tree:
         self.hist_loc = hist_loc_init([], width, height, row_heights, column_widths)
 
 
-
-    def upgrade(self, ID, game):
-        #TODO make this more complex for an actual tree
-        #print(ID)
+    def is_legal(self, ID, game):
         if ID == "WOM":
-            
-            self.word_of_mouth += 1
             if game.believers < self.wom_cost:
                 return False
             else:
-                game.believers = game.believers - self.wom_cost
-                self.wom_cost += 10
                 return True
 
-        #print(ID)
-        #print(self.skills[ID])
-        else:
+        legal = False
+        num = int(ID[4::]) - 1
+
+        if ID[0:4:] == "WRIT":
+            if writ_prereqs[num] == 0:
+                legal = True
+            else:
+                if self.skills[ID[0:4:] + str(writ_prereqs[num])].present:
+                    legal = True
+        elif ID[0:4:] == "TECH":
+            if tech_prereqs[num] == 0:
+                legal = True
+            else:
+                if self.skills[ID[0:4:] + str(tech_prereqs[num])].present:
+                    legal = True
+        elif ID[0:4:] == "HIST":
+            if hist_prereqs[num] == 0:
+                legal = True
+            else:
+                if self.skills[ID[0:4:] + str(hist_prereqs[num])].present:
+                    legal = True
+        if int(self.skills[ID].cost) > game.believers:
             legal = False
-            num = int(ID[4::]) - 1
+        return legal
 
-            if ID[0:4:] == "WRIT":
-                if writ_prereqs[num] == 0:
-                    legal = True
+    def upgrade(self, ID, game):
+        legal = self.is_legal(ID, game)
+        if ID == "WOM":
+            if legal:
+                game.believers = game.believers - self.wom_cost
+                self.word_of_mouth += 1
+                self.wom_cost += 10
+                return True
+            else:
+                return False
+
+        if not self.skills[ID].present and legal:
+            #TODO change this to something that is not truee if I need it
+            if legal:
+                if game.believers < int(self.skills[ID].cost):
+                    return False
                 else:
-                    #print("prereq = " + ID[0:4:] + str(writ_prereqs[num]))
-                    #print(self.skills[ID[0:4:] + str(writ_prereqs[num])])
-                    if self.skills[ID[0:4:] + str(writ_prereqs[num])].present:
-                        legal = True
+                    game.believers = game.believers - int(self.skills[ID].cost)
+                    self.skills[ID].present = True 
+                    return True
 
-            elif ID[0:4:] == "TECH":
-                if tech_prereqs[num] == 0:
-                    legal = True
-                else:
-                    if self.skills[ID[0:4:] + str(tech_prereqs[num])].present:
-                        #print(tech_prereqs[num])
-                        #print(ID)
-                        legal = True
-
-            elif ID[0:4:] == "HIST":
-                if hist_prereqs[num] == 0:
-                    legal = True
-                else:
-                    if self.skills[ID[0:4:] + str(hist_prereqs[num])].present:
-                        legal = True
-
-
-            if not self.skills[ID].present and legal:
-                #TODO change this to something that is not truee if I need it
-                if legal:
-                    if game.believers < int(self.skills[ID].cost):
-                        return False
-                    else:
-                        game.believers = game.believers - int(self.skills[ID].cost)
-                        self.skills[ID].present = True 
-                        return True
-
-            return False
+        return False
 
     def update_believers(self, game):
+        upgrade_amount = self.word_of_mouth
         for item in self.skills:
             if self.skills[item].present == True and self.skills[item].effect_type == "PASSIVE":
-                upgrade_amount = self.word_of_mouth * float(self.skills[item].effect_size)
-        game.believers = math.ceil(game.believers + self.word_of_mouth)
+                upgrade_amount += self.word_of_mouth * float(self.skills[item].effect_size)
+        game.believers = math.ceil(game.believers + upgrade_amount)
         
 
 

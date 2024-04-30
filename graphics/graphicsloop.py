@@ -76,7 +76,10 @@ class Graphics:
         tech_icon = pygame.image.load(path + 'images/tech_icon.png').convert_alpha()
         map_icon = pygame.image.load(path + 'images/map_icon.png').convert_alpha()
 
-        self.wom_button = button.Button(SCREEN_WIDTH * 0.06, SCREEN_HEIGHT * 0.8, wom_icon, scale * 0.09)
+
+        wom_button = button.Button(SCREEN_WIDTH * 0.06, SCREEN_HEIGHT * 0.8, wom_icon, scale * 0.09)
+        self.wom_power = button.Power(wom_button, "WOM")
+        
         self.writ_button = button.Button(SCREEN_WIDTH * 0.3, SCREEN_HEIGHT * 0.85, writ_icon, scale * 0.09)
         self.hist_button = button.Button(SCREEN_WIDTH * 0.5, SCREEN_HEIGHT * 0.85, hist_icon, scale * 0.09)
         self.tech_button = button.Button(SCREEN_WIDTH * 0.7, SCREEN_HEIGHT * 0.85, tech_icon, scale * 0.09)
@@ -123,73 +126,72 @@ class Graphics:
 
 
     def default_screen(self, curr_screen, game):
-        
+        ret_val = curr_screen
         if curr_screen == DEFAULT:
             self.map_bg_screen.draw(self.screen)
-            if self.wom_button.draw(self.screen):
-                game.tree.upgrade("WOM", game)
         elif curr_screen == WRIT_TREE:
-            #writ tree            
-            self.draw_writ_tree(game)
-        elif curr_screen == TECH_TREE:
-            self.draw_tech_tree(game)
-
-
-            #tech_tree
+            self.writ_bg_screen.draw(self.screen)
         elif curr_screen == HIST_TREE:
-            self.draw_hist_tree(game)
-            #hist_tree
+            self.hist_bg_screen.draw(self.screen)
+        elif curr_screen == TECH_TREE:
+            self.tech_bg_screen.draw(self.screen)
+
+        if self.writ_button.draw(self.screen):
+            ret_val = WRIT_TREE
+        if self.hist_button.draw(self.screen):
+            ret_val = HIST_TREE
+        if self.tech_button.draw(self.screen):
+            ret_val = TECH_TREE
 
         if curr_screen != DEFAULT:
             if self.map_button.draw(self.screen):
                 return DEFAULT
 
-        if self.writ_button.draw(self.screen):
-            return WRIT_TREE
-        if self.hist_button.draw(self.screen):
-            return HIST_TREE
-        if self.tech_button.draw(self.screen):
-            return TECH_TREE
+        if curr_screen == DEFAULT:
+            if self.wom_power.draw(self.screen, game):
+                game.tree.upgrade("WOM", game)
+
+        elif curr_screen == WRIT_TREE:
+            #writ tree            
+            self.draw_writ_tree(game)
+        elif curr_screen == TECH_TREE:
+            self.draw_tech_tree(game)
+            #tech_tree
+        elif curr_screen == HIST_TREE:
+            self.draw_hist_tree(game)
+            #hist_tree
+
         
         #return current image
-        return curr_screen
+        return ret_val
 
     def draw_writ_tree(self, game):
-        self.writ_bg_screen.draw(self.screen)
-        for item in self.writ:
-            item.draw(self.screen, game)
-
         for line in game.tree.writ_lines:
             #draw lines
             width = 5 if game.tree.skills["WRIT" + str(line[1])] else 2
             pygame.draw.line(self.screen, (0,0,0), (game.tree.writ_loc[line[0]][0] + (1000 * self.scale * 0.09 / 2), game.tree.writ_loc[line[0]][1]), (game.tree.writ_loc[line[1]][0] + (1000 * self.scale * 0.09 / 2), game.tree.writ_loc[line[1]][1] + (1000 * self.scale * 0.09)), width)
-            
+        for item in self.writ:
+            item.draw(self.screen, game)    
 
     def draw_hist_tree(self, game):
-        self.hist_bg_screen.draw(self.screen)
-        for item in self.hist:
-            item.draw(self.screen, game)
-
         for line in game.tree.hist_lines:
             #draw lines
             width = 5 if game.tree.skills["HIST" + str(line[1])] else 2
             pygame.draw.line(self.screen, (0,0,0), (game.tree.hist_loc[line[0]][0] + (1000 * self.scale * 0.09 / 2), game.tree.hist_loc[line[0]][1]), (game.tree.hist_loc[line[1]][0] + (1000 * self.scale * 0.09 / 2), game.tree.hist_loc[line[1]][1] + (1000 * self.scale * 0.09)), width)
-        
-
-    def draw_tech_tree(self, game):
-        self.tech_bg_screen.draw(self.screen)
-        for item in self.tech:
+        for item in self.hist:
             item.draw(self.screen, game)
 
+    def draw_tech_tree(self, game):
         for line in game.tree.tech_lines:
             #draw lines
             width = 5 if game.tree.skills["TECH" + str(line[1])] else 2
             pygame.draw.line(self.screen, (255,255,255), (game.tree.tech_loc[line[0]][0] + (1000 * self.scale * 0.09 / 2), game.tree.tech_loc[line[0]][1]), (game.tree.tech_loc[line[1]][0] + (1000 * self.scale * 0.09 / 2), game.tree.tech_loc[line[1]][1] + (1000 * self.scale * 0.09)), width)
-        
+        for item in self.tech:
+            item.draw(self.screen, game)
 
     def event_tree_screen(self, curr_screen, game):
         self.map_bg_screen.draw(self.screen)
-        self.wom_button.draw(self.screen)
+        self.wom_power.draw(self.screen, game)
         self.writ_button.draw(self.screen)
         self.hist_button.draw(self.screen)
         self.tech_button.draw(self.screen)
@@ -207,7 +209,7 @@ class Graphics:
 
     def draw_end_screen(self, curr_screen, game):
         self.map_bg_screen.draw(self.screen)
-        self.wom_button.draw(self.screen)
+        self.wom_power.draw(self.screen, game)
             
         end_text = ""
         if game.win:
@@ -234,9 +236,9 @@ class Graphics:
         # #TODO ADD TIME INTERVAL
         # if believers == 8:
         #     curr_screen = EVENT
-        if curr_screen == END:
+        if curr_screen == WIN:
             curr_screen = self.draw_end_screen(curr_screen, game)
-        if curr_screen == EVENT:
+        elif curr_screen == EVENT:
             curr_screen = self.event_tree_screen(curr_screen, game)
         else:
             curr_screen = self.default_screen(curr_screen, game)
@@ -245,7 +247,7 @@ class Graphics:
         non_believer_txt = ""
         believer_txt += str(believers) + " believers"
         non_believer_txt += str(tot_people - believers) + " non-believers"
-        timer_text = str(round((game.end_time - game.counter) / 60)) + " seconds remaining"
+        timer_text = str(round((game.end_time - game.counter) / 30)) + " seconds remaining"
         pygame.draw.rect(screen, (137, 207, 240), (45, 20, 225, 55), border_radius = 10)
         pygame.draw.rect(screen, (200, 200, 200), (550, 20, 175, 55), border_radius = 10)
 
