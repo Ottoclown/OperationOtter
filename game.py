@@ -27,7 +27,7 @@ class Game:
         self.population = POP
         self.tree = Tree()
 
-        self.end_time = 30 * 150
+        self.end_time = 30 * 180
         self.quit = False
 
         self.counter = 0
@@ -215,7 +215,7 @@ def main():
     database = "database/events.csv"
 
     #print("it gets past database")
-    tests = 10000
+    tests = 1000
 
     new_game = Game(database)
 

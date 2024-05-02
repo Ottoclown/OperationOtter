@@ -140,14 +140,23 @@ class Button:
         for option in self.event.options:
             #check if I that option is available,
             #then draw
-            if option.requirements in game.tree.skills or option.requirements == "0":
+            legal = True
+            color = (0,0,0)
+            if option.requirements != "0":
                 #draw an outline maybe
-                
-                curr_loc = self.draw_txt(surface, opt_width, opt_distance, option.text, curr_loc[1])
-                if curr_loc[0]:
-                    option.change(game)
-                    return DEFAULT
-                curr_loc = [curr_loc[0], (curr_loc[1][0], curr_loc[1][1] + opt_distance)]
+                if option.requirements not in game.tree.skills or game.tree.skills[option.requirements].present != True:
+                    legal = False
+
+                if not legal:
+                    continue
+                color = (160, 160, 220)
+            
+            
+            curr_loc = self.draw_txt(surface, opt_width, opt_distance, option.text, curr_loc[1], color)
+            if curr_loc[0]:
+                option.change(game)
+                return DEFAULT
+            curr_loc = [curr_loc[0], (curr_loc[1][0], curr_loc[1][1] + opt_distance)]
                 #edit population information
                 #use type eventually
                 

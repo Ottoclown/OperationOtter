@@ -336,7 +336,7 @@ class Graphics:
                 draw_arrow(self.screen, (255,255,255), (250, 250), (100, 100), 5)
                 tut_text = "your current believer count is located in the top left of the screen."
             if self.tut_stage == 4:
-                draw_arrow(self.screen, (255,255,255), (400, 250), (650, 50), 15)
+                draw_arrow(self.screen, (255,255,255), (400, 250), (600, 75), 15)
                 tut_text = "The days remaining til the election is displayed in the top left."
             if self.tut_stage == 5:
                 draw_arrow(self.screen, (255,255,255), (250, 400), self.wom_power.button.rect.topleft, 5)
