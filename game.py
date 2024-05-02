@@ -12,11 +12,12 @@ EVENT_PROB = 0.1
 BELIEVER_PERCENT = 0.05
 POP = 300000
 
+END = -2
+QUIT = -1 
 DEFAULT = 0
 EVENT = 5
-
-WIN = -2
-END = -1            
+    
+INTRO = 50
 
 #Start with creating a system
 class Game:
@@ -27,6 +28,7 @@ class Game:
         self.tree = Tree()
 
         self.end_time = 30 * 150
+        self.quit = False
 
         self.counter = 0
 
@@ -34,20 +36,32 @@ class Game:
         filename = event_database
         self.events = csv.read_events(filename)
         #add all events to the game
-        self.curr_screen = DEFAULT
+        self.curr_screen = INTRO
 
     
 
     #upgrades is a list of the updates in the upgrade tree
     def update(self, world):
 
-        self.curr_screen = world.update_screen(self.curr_screen, self.believers, self.population, game=self)
+        self.curr_screen = world.update_screen(self.curr_screen, self)
         
-        if self.curr_screen == END:
-            self.end = True
-
+        if self.curr_screen == INTRO:
+            return
+        if self.curr_screen == QUIT:
+            self.quit = True
+            return
+        if round((self.end_time - self.counter) / 30) <= 0:
+            #lose condition
+            self.win = False
+            self.curr_screen = END
+            return
+            #self.end = True
+        if self.believers > self.population / 2:
+            self.win = True
+            self.curr_screen = END
+            return
         #create a function to increase believers
-        if self.curr_screen != EVENT:
+        if self.curr_screen < EVENT:
             self.counter += 1
 
         if self.counter % 5 == 0:
@@ -59,34 +73,13 @@ class Game:
             self.curr_screen = EVENT
             self.counter += 1
 
-        if round((self.end_time - self.counter) / 30) <= 0:
-            #lose condition
-            self.win = False
-            self.curr_screen = WIN
-            #self.end = True
-
-        if self.curr_screen == -1 or self.believers > self.population / 2:
-            self.win = True
-            self.curr_screen = WIN
-            #self.end = True
-
-        
-        # event = random.random()
-        # if event < EVENT_PROB:
-        #     #TODO change event function name
-        #     self.event(map, self.tree)
-        # else:
-        #     #based on tree update position slightly
-        #     #base upgrade that increases the amount that people convert
-        #     map = map.believers()
-
     def run(self):
         self.end = False
         world = graphics.Graphics(self)
 
         world.set_events(self.events)
 
-        while not self.end:
+        while not self.quit:
             pygame.event.pump()
             self.update(world)
         
@@ -139,7 +132,7 @@ class Game:
     def simulate(self, upgrade_algo, event_algo):
         num_reps = 0
         self.reset_game()
-        while not self.end:
+        while not self.quit:
             num_reps += 1
             self.bot_update_believers()
             upgrade_algo(self)
@@ -147,9 +140,9 @@ class Game:
             event_algo(self, event).change(self)
 
             if self.counter >= self.end_time:
-                self.end = True
+                self.quit = True
             if self.believers >= (self.population / 2):
-                self.end = True
+                self.quit = True
                 self.win = True
         #print(self.believers)
         #print("num reps = " + str(num_reps))
@@ -157,7 +150,7 @@ class Game:
 
     def reset_game(self):
         self.win = False
-        self.end = False
+        self.quit = False
         self.believers = 1
         self.counter = 0
         for skill in self.tree.skills:
@@ -165,7 +158,7 @@ class Game:
 
         self.tree.wom_cost = 10
         self.tree.word_of_mouth = 1
-        self.curr_screen = DEFAULT
+        self.curr_screen = INTRO
         
 
     def test_algorithm(self, reps, upgrade_algo, event_algo):
@@ -174,6 +167,7 @@ class Game:
             self.reset_game()
             if self.simulate(upgrade_algo, event_algo):
                 total_wins += 1
+        self.reset_game()
         return total_wins / reps
             
 
@@ -221,7 +215,7 @@ def main():
     database = "database/events.csv"
 
     #print("it gets past database")
-    tests = 1000
+    tests = 10000
 
     new_game = Game(database)
 
@@ -234,6 +228,6 @@ def main():
     # print("Greedy upgrades, random events: win percentage == " + str(new_game.test_algorithm(tests, greedy_upgrades, random_events)))
     new_game.run()
 
-    new_game.run()
+
 
 main()

@@ -15,16 +15,50 @@ class Power:
         self.active = False
         self.id = id
         self.button = button
+        self.font = pygame.font.SysFont("Arial", 15)
+
+    def deactivate(self):
+        self.active = False
 
     def draw(self, surface, game):
         #pygame.draw.rect(surface, (137, 207, 240), (45, 20, 225, 55), border_radius = 10)
-        if self.active:
-            pygame.draw.rect(surface, (255, 255, 255), self.button.rect)
-        else:
-            pygame.draw.rect(surface, (50, 50, 50), self.button.rect)
+        if self.id != "WOM":
+            if self.active:
+                pygame.draw.rect(surface, (255, 255, 255), self.button.rect)
+            else:
+                pygame.draw.rect(surface, (50, 50, 50), self.button.rect)
         if self.button.draw(surface):
+            if self.id == "WOM":
+                return True
             if game.tree.upgrade(self.id, game):
                 self.active = True
+
+        pos = pygame.mouse.get_pos()
+
+		#check mouseover and clicked conditions
+        if self.button.rect.collidepoint(pos):
+            #show hover_txt
+            if self.id == "WOM":
+                pygame.draw.rect(surface, (165, 123, 60), (10, 400, 300, 150), border_radius = 5)
+                start_pos = (15, 405)
+                wom_description = "Conspiracy theories often spread from word of mouth. Many people assume that because a trusted friend shared the information that it is true. Upgrade this skill to increase the passive rate of believer increase."
+                new_pos = make_text(surface, 300, 80, "Word of Mouth", start_pos, self.font, (0,0,0))
+                wom_text = "Cost of Upgrade: " + str(game.tree.wom_cost) + " believers"
+                final_pos = make_text(surface, 300, 80, wom_text, new_pos, self.font, (0,0,0))
+                make_text(surface, 300, 80, wom_description, final_pos, self.font, (0,0,0))
+            else:
+                pygame.draw.rect(surface, (165, 123, 60), (10, 590, 300, 150), border_radius = 5)
+                start_pos = (15, 595)
+
+                new_pos = make_text(surface, 300, 80, game.tree.skills[self.id].name, start_pos, self.font, (0,0,0))
+                if self.active:
+                    make_text(surface, 300, 80, game.tree.skills[self.id].hover_text, new_pos, self.font, (0,0,0))
+                else:
+                    cost_text = "Cost of Upgrade: " + game.tree.skills[self.id].cost + " believers"
+                    final_pos = make_text(surface, 300, 80, cost_text, new_pos, self.font, (0,0,0))
+                    make_text(surface, 300, 80, "Upgrade to learn more.", final_pos, self.font, (0,0,0))
+        if self.id == "WOM":
+            return False
 
 class Button:
     def __init__(self, x, y, image, scale, event=None, type=0, color=(0,0,0)):
