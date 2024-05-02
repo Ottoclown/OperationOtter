@@ -333,18 +333,18 @@ class Graphics:
             game.believers = 0
             pygame.draw.rect(screen, (255, 255, 255), (250, 250, 250, 250), border_radius = 5)
             if self.tut_stage == 3:
-                draw_arrow(self.screen, (255,255,255), (250, 250), (100, 100), 5)
+                draw_arrow(self.screen, (255,255,255), (250, 250), (100, 100), 7)
                 tut_text = "your current believer count is located in the top left of the screen."
             if self.tut_stage == 4:
-                draw_arrow(self.screen, (255,255,255), (400, 250), (600, 75), 15)
+                draw_arrow(self.screen, (255,255,255), (400, 250), (600, 75), 7)
                 tut_text = "The days remaining til the election is displayed in the top left."
             if self.tut_stage == 5:
                 draw_arrow(self.screen, (255,255,255), (250, 400), self.wom_power.button.rect.topleft, 5)
                 tut_text = "Upgrades cost current believers. Their cost and description are shown on the left of the screen when you hover your mouse over them. Click their icons to upgrade that skill."
             if self.tut_stage == 6:
-                draw_arrow(self.screen, (255,255,255), (325, 400), self.writ_button.rect.topleft, 5)
-                draw_arrow(self.screen, (255,255,255), (325, 400), self.tech_button.rect.topleft, 5)
-                draw_arrow(self.screen, (255,255,255), (325, 400), self.hist_button.rect.topleft, 5)
+                draw_arrow(self.screen, (255,255,255), (325, 400), self.writ_button.rect.topleft, 7)
+                draw_arrow(self.screen, (255,255,255), (325, 400), self.tech_button.rect.topleft, 7)
+                draw_arrow(self.screen, (255,255,255), (325, 400), self.hist_button.rect.topleft, 7)
 
                 tut_text = "Navigate to different skill trees to add upgrades in different paths. Below are Writing, History, and Technology."
 
