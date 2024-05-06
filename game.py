@@ -222,11 +222,11 @@ def main():
     print_stats(new_game, tests)
 
     #print(new_game.simulate(random_upgrades, random_events))
-    print("Random upgrades, random events: win percentage == " + str(new_game.test_algorithm(tests, random_upgrades, random_events)))
-    print("Greedy upgrades, greedy events: win percentage == " + str(new_game.test_algorithm(tests, greedy_upgrades, greedy_events)))
-    print("Random upgrades, greedy events: win percentage == " + str(new_game.test_algorithm(tests, random_upgrades, greedy_events)))
-    print("Greedy upgrades, random events: win percentage == " + str(new_game.test_algorithm(tests, greedy_upgrades, random_events)))
-    #new_game.run()
+    # print("Random upgrades, random events: win percentage == " + str(new_game.test_algorithm(tests, random_upgrades, random_events)))
+    # print("Greedy upgrades, greedy events: win percentage == " + str(new_game.test_algorithm(tests, greedy_upgrades, greedy_events)))
+    # print("Random upgrades, greedy events: win percentage == " + str(new_game.test_algorithm(tests, random_upgrades, greedy_events)))
+    # print("Greedy upgrades, random events: win percentage == " + str(new_game.test_algorithm(tests, greedy_upgrades, random_events)))
+    new_game.run()
 
 
 
